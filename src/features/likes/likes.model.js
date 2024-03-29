@@ -1,4 +1,4 @@
-import CustomError from "../../middlewares/custom-error.middleware";
+import CustomError from "../../middlewares/custom-error.middleware.js";
 
 const likes = [{
         'id': 1,

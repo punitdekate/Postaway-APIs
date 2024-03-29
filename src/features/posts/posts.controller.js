@@ -1,61 +1,108 @@
 import CustomError from "../../middlewares/custom-error.middleware.js";
+import PostRepository from "./post.repository.js";
 import PostsModel from "./posts.model.js";
 
 export default class PostsController {
-    addPost(req, res) {
+    constructor() {
+        this.postRepository = new PostRepository();
+    }
+    async addPost(req, res, next) {
         try {
             const files = req.files;
-            const { userId, caption } = req.body;
-            const result = PostsModel.post(userId, caption, files);
+            const { caption } = req.body;
+            const userId = req.id
+            const postData = new PostsModel(userId, caption);
+            if (files.length <= 0 || !caption) {
+                return res.status(400).send({ "success": false, "msg": "Caption and Files required to create new post" });
+            }
+            files.forEach(file => {
+                postData.imageUrl.push(file.filename);
+            })
+            const result = await this.postRepository.createNewPost(postData);
             return res.status(201).send(result);
         } catch (error) {
-            throw new CustomError("There is some issue in post please try later", 400);
+            if (error instanceof CustomError) {
+                next(error);
+            } else {
+                throw new CustomError("There's a problem with create new post. We'll fix it. Please try again later.", 400, error);
+            }
         }
     }
 
-    allPosts(req, res) {
+    async allPosts(req, res, next) {
         try {
-            const posts = PostsModel.getAll();
+            const posts = await this.postRepository.getAllPosts();
             return res.status(200).send(posts);
         } catch (error) {
-            throw new CustomError("There is some issue in retrieving the posts please try later", 400);
+            if (error instanceof CustomError) {
+                next(error);
+            } else {
+                throw new CustomError("There's a problem with retrieving posts. We'll fix it. Please try again later.", 400, error);
+            }
         }
     }
 
-    post(req, res) {
+    async getPost(req, res, next) {
         try {
-            const post = PostsModel.get(req.params.id);
+            const post = await this.postRepository.getSpecificPost(req.params.postId);
             return res.status(200).send(post);
         } catch (error) {
-            throw new CustomError("There is some issue in retieving post for the user please try later", 400);
+            if (error instanceof CustomError) {
+                next(error);
+            } else {
+                throw new CustomError("There's a problem with retrieving post. We'll fix it. Please try again later.", 400, error);
+            }
         }
     }
 
-    userPosts(req, res) {
+    async userPosts(req, res, next) {
         try {
-            const userPosts = PostsModel.getUserPost(req.id);
+            let userId = req.id;
+            const userPosts = await this.postRepository.getUserPosts(userId);
             return res.status(200).send(userPosts);
         } catch (error) {
-            throw new CustomError("There is some issue in retrieving the users posts please try later");
+            if (error instanceof CustomError) {
+                next(error);
+            } else {
+                throw new CustomError("There's a problem with retrieving user posts. We'll fix it. Please try again later.", 400, error);
+            }
         }
     }
 
-    removePost(req, res) {
+    async removePost(req, res, next) {
         try {
-            const id = req.params.id;
+            const postId = req.params.postId;
             let userId = req.id;
-            const result = PostsModel.delete(id, userId);
-            res.status(200).send(result);
-        } catch (erorr) { throw new CustomError("There is some issue in removing post please try later", 400); }
+            const result = await this.postRepository.deleteSpecificPost(postId, userId);
+            return res.status(200).send(result);
+        } catch (error) {
+            if (error instanceof CustomError) {
+                next(error);
+            } else {
+                throw new CustomError("There's a problem with deleting post. We'll fix it. Please try again later.", 400, error);
+            }
+        }
     }
-    updatePost(req, res) {
+    async updatePost(req, res, next) {
         try {
-            const id = req.params.id;
+            const postId = req.params.postId;
             const { caption } = req.body;
             let userId = req.id;
             const files = req.files;
-            const result = PostsModel.update(id, userId, caption, files);
+            const postData = new PostsModel(userId, caption);
+            if (files.length > 0) {
+                files.forEach(url => {
+                    postData.imageUrl.push(url.filename);
+                })
+            }
+            const result = await this.postRepository.updateSepecificPost(postId, postData);
             return res.status(200).send(result);
-        } catch (error) { throw new CustomError("There is some issue in updating the post please try later", 400); }
+        } catch (error) {
+            if (error instanceof CustomError) {
+                next(error);
+            } else {
+                throw new CustomError("There's a problem with updating post. We'll fix it. Please try again later.", 400, error);
+            }
+        }
     }
 }

@@ -4,11 +4,35 @@ import { upload } from '../../middlewares/fileupload.middleware.js';
 const postsRouter = express.Router();
 
 const postsController = new PostsController();
-postsRouter.get('/all', postsController.allPosts);
-postsRouter.get('/:id', postsController.post)
-postsRouter.post('/', upload.array('imageUrl'), postsController.addPost);
-postsRouter.get('/', postsController.userPosts);
-postsRouter.delete('/:id', postsController.removePost);
-postsRouter.put('/:id', upload.array('imageUrl'), postsController.updatePost);
+
+
+//To retrive all posts
+postsRouter.get('/all', (req, res, next) => {
+    postsController.allPosts(req, res, next);
+});
+
+//To retrieve the specific post from the post id
+postsRouter.get('/:postId', (req, res, next) => {
+    postsController.getPost(req, res, next);
+})
+
+//To create new post 
+postsRouter.post('/', upload.array('imageUrl'), (req, res, next) => {
+    postsController.addPost(req, res, next);
+});
+
+postsRouter.get('/', (req, res, next) => {
+    postsController.userPosts(req, res, next);
+});
+
+
+postsRouter.delete('/:postId', (req, res, next) => {
+    postsController.removePost(req, res, next);
+});
+
+
+postsRouter.put('/:postId', upload.array('imageUrl'), (req, res, next) => {
+    postsController.updatePost(req, res, next)
+});
 
 export default postsRouter;
