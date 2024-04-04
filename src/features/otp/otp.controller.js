@@ -2,6 +2,7 @@ import OtpRepository from "./otp.repository.js";
 import CustomError from "../../middlewares/custom-error.middleware.js";
 import { mail } from "../../utility/mail.utility.js";
 import { hashPassword } from "../../utility/password.handler.js";
+import axios from "axios";
 export default class OtpController {
     constructor() {
         this.otpRepository = new OtpRepository();
@@ -10,9 +11,7 @@ export default class OtpController {
     async sendOtp(req, res, next) {
         try {
             let otp = this.generateOTP(6);
-            let userId = req.id;
-            let email = req.body.email
-            console.log(otp);
+            let email = req.body.email;
             const result = await this.otpRepository.send(email, otp);
             let from = 'punitdekate.1999@gmail.com'; // Sender's email address
             let to = email; // Recipient's email address
@@ -46,7 +45,15 @@ export default class OtpController {
 
     async resetPassword(req, res, next) {
         try {
-            const { email, newPassword } = req.body;
+            const { otp, email, newPassword } = req.body;
+            const otpVerificationResponse = await axios.post('http://localhost:8000/api/otp/verify', {
+                otp: otp,
+                email: email
+            });
+            // console.log(otpVerificationResponse)
+            if (!otpVerificationResponse.data.success) {
+                return res.status(400).send(otpVerificationResponse.data);
+            }
             const encryptedPassword = await hashPassword(newPassword);
             const result = await this.otpRepository.reset(email, encryptedPassword);
             if (result.success) {
@@ -61,8 +68,6 @@ export default class OtpController {
                 throw new CustomError("There's an issue reset password. We're working on it. Please try again later.", 400, error);
             }
         }
-
-
     }
 
     generateOTP(length) {

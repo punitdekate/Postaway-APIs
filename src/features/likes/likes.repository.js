@@ -26,7 +26,6 @@ export default class LikesRepository {
                 return { "success": false, "msg": "Post Id is not valid" };
             }
             const like = await LikesModel.deleteOne({ likeable: postId, userId: userId });
-            console.log(like);
             if (like.deletedCount > 0) {
                 return { "success": true, "msg": "Like removed from post successfully" }
             } else {
@@ -62,8 +61,7 @@ export default class LikesRepository {
                     type: 'Comment'
                 })
                 const savedLike = await likeAdded.save();
-                // const populatedComment = await CommentsModel.findById(commentId).populate('Like');
-                // const populatedComment = await LikesModel.find({ likeable: commentId }).populate('Comment');
+                const populatedComment = await LikesModel.find({likeable:commentId}).populate('likeable');
                 return { "success": true, "msg": "Like added successfully", "data": savedLike };
             }
         } catch (error) {

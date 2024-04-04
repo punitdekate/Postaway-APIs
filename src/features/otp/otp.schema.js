@@ -13,7 +13,7 @@ const otpSchema = new mongoose.Schema({
         unique: [true, 'Email is already taken']
     },
     otp: {
-        type: Number,
+        type: String,
         required: true
     },
     createdTime: {

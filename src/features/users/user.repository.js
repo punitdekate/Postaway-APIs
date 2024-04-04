@@ -70,9 +70,6 @@ export default class UserRepository {
                 if (userDetails.email) {
                     user.email = userDetails.email
                 }
-                if (userDetails.password) {
-                    user.password = userDetails.password;
-                }
                 if (userDetails.mobile) {
                     user.mobile = userDetails.mobile
                 }
@@ -87,7 +84,6 @@ export default class UserRepository {
 
         } catch (error) {
             throw new CustomError("The user details update failed. Please try again later", 400, error);
-
         }
     }
 

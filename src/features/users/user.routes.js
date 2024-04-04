@@ -41,4 +41,8 @@ usersRouter.put('/update-details/:userId', auth, (req, res, next) => {
     userController.updateDetails(req, res, next);
 })
 
+
+//To reset the password
+
+
 export default usersRouter;
